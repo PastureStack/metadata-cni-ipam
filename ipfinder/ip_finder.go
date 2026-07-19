@@ -1,6 +1,10 @@
 package ipfinder
 
-//IPFinder is used to get IP address given a container ID.
+import (
+	"context"
+	"net"
+)
+
 type IPFinder interface {
-	GetIP(cid, rancherid string) string
+	FindIP(context.Context, string, string) (net.IP, error)
 }

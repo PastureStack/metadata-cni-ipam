@@ -4,4 +4,4 @@
 *.swp
 *.diff
 /.trash-cache
-rancher-cni-ipam
+metadata-cni-ipam
