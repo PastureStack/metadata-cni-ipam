@@ -1,28 +1,57 @@
-rancher-cni-ipam
-========
+# Metadata CNI IPAM
 
-A microservice that does micro things.
+`metadata-cni-ipam` is a Linux CNI IPAM plugin that resolves a container's control-plane-assigned primary address from the platform metadata service.
 
-## Building
+PastureStack is an independent community effort to preserve, audit, and modernize the Rancher 1.6 ecosystem. It is not affiliated with or endorsed by Rancher Labs or SUSE.
 
-`make`
+**Upstream:** [`rancher/rancher-cni-ipam`](https://github.com/rancher/rancher-cni-ipam). This GitHub fork retains the upstream Git history, authorship, dates, and license notices unchanged; PastureStack maintenance is consolidated into one commit after the preserved upstream boundary.
 
+## POC scope
 
-## Running
+- CNI versions 0.1.0 through 1.1.0;
+- lookup by runtime container ID with a platform UUID fallback;
+- bounded polling through the 2015-12-19 metadata `containers` resource;
+- configurable subnet prefix, routes, timeout, interval, and metadata endpoint;
+- 8 MiB metadata response limit and optional HTTPS CA bundle;
+- metadata requests bypass ambient proxies and do not follow redirects;
+- the optional CA bundle is a regular file of at most 1 MiB at the managed
+  read-only path `/var/lib/pasturestack/etc/ssl/ca.crt`;
+- file logging is limited to `/var/log/pasturestack` and the deployed
+  `/var/log/pasturestack-cni.log` compatibility path.
 
-`./bin/rancher-cni-ipam`
+The plugin has no user interface or language catalog, so localization is not applicable.
 
-## License
-Copyright (c) 2014-2016 [Rancher Labs, Inc.](http://rancher.com)
+## Build and test
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+```sh
+go test -race ./...
+go vet ./...
+go mod verify
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -buildvcs=false -o bin/metadata-cni-ipam .
+```
 
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+## Configuration
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+```json
+{
+  "cniVersion": "1.1.0",
+  "name": "pasture-network",
+  "ipam": {
+    "type": "metadata-cni-ipam",
+    "metadataURL": "http://metadata/2015-12-19",
+    "subnetPrefixSize": "/16",
+    "lookupTimeout": "2m",
+    "pollInterval": "500ms"
+  }
+}
+```
+
+`PLATFORM_METADATA_URL` overrides `metadataURL`. To enable a private metadata
+CA, set `PLATFORM_CA_ROOT` to the exact managed mount
+`/var/lib/pasturestack/etc/ssl/ca.crt`; arbitrary paths, symbolic links,
+non-regular files, and bundles larger than 1 MiB are rejected. `CNI_ARGS` may
+supply `PlatformContainerUUID` as a fallback identifier.
+
+## License and provenance
+
+The root license remains unchanged. Existing history and attribution are retained; see [ORIGIN.md](ORIGIN.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and [LICENSE](LICENSE).
