@@ -1,5 +1,7 @@
 # Metadata CNI IPAM
 
+Current source builds use Go 1.27.3 while the Go language minimum remains 1.26.0. These source inputs take effect in newly built artifacts; existing published release coordinates below describe their original artifacts.
+
 `metadata-cni-ipam` is a Linux CNI IPAM plugin that resolves a container's control-plane-assigned primary address from the platform metadata service.
 
 PastureStack is an independent community effort to preserve, audit, and modernize the Rancher 1.6 ecosystem. It is not affiliated with or endorsed by Rancher Labs or SUSE.
